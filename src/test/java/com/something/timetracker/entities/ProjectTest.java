@@ -14,15 +14,15 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 
-public class ProjectTest {
+class ProjectTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         TimeMachine.use();
     }
 
     @Test
-    public void starting_tracking_starts_tracking() {
+    void starting_tracking_starts_tracking() {
         LocalDateTime time = DateTime.now();
 
         Project project = new Project();
@@ -32,7 +32,7 @@ public class ProjectTest {
     }
 
     @Test
-    public void stopping_tracking_stops_tracking() {
+    void stopping_tracking_stops_tracking() {
         Project project = new Project();
 
         LocalDateTime startTime = DateTime.now();
@@ -47,7 +47,7 @@ public class ProjectTest {
     }
 
     @Test
-    public void working_time_history_is_stored() {
+    void working_time_history_is_stored() {
         Project project = new Project();
 
         LocalDateTime startTimeOfFirstIteration = DateTime.now();
@@ -67,7 +67,7 @@ public class ProjectTest {
     }
 
     @Test
-    public void cannot_start_active_iteration_again() {
+    void cannot_start_active_iteration_again() {
         Project project = new Project();
         LocalDateTime startTime = DateTime.now();
         project.startIteration();

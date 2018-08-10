@@ -7,21 +7,19 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public class Project {
-    private long id;
-
+public class Project extends Entity {
     private String name;
 
     private LocalDateTime startTime;
 
     private Set<WorkingTime> workingTimes = new HashSet<>();
 
-    public long getId() {
-        return id;
+    public Project() {
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public Project(String projectName) {
+        this();
+        setName(projectName);
     }
 
     public String getName() {
@@ -33,7 +31,7 @@ public class Project {
     }
 
     public void startIteration() {
-        if(startTime == null){
+        if (startTime == null) {
             startTime = DateTime.now();
         }
     }
