@@ -1,4 +1,4 @@
-package com.something.timetracker.services.impl.test;
+package com.something.timetracker.services.impl;
 
 import com.something.timetracker.repositories.contracts.ProjectRepository;
 import com.something.timetracker.services.contracts.TimeTrackingService;

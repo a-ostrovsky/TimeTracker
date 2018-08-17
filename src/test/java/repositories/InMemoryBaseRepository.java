@@ -11,6 +11,8 @@ import java.util.Map;
 
 public class InMemoryBaseRepository<T extends Entity> implements GenericRepository<T> {
 
+    private int currentId = 0;
+
     private final Map<Long, T> database = new HashMap<>();
 
     @Override
@@ -27,8 +29,10 @@ public class InMemoryBaseRepository<T extends Entity> implements GenericReposito
     }
 
     @Override
-    public void create(T entity) {
+    public T create(T entity) {
+        entity.setId(currentId++);
         database.put(entity.getId(), entity);
+        return entity;
     }
 
     @Override

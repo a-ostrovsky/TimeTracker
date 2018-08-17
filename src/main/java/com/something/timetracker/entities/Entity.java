@@ -1,6 +1,9 @@
 package com.something.timetracker.entities;
 
+import java.util.Objects;
+
 public abstract class Entity {
+
     private long id;
 
     public long getId() {
@@ -9,5 +12,18 @@ public abstract class Entity {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Entity entity = (Entity) o;
+        return getId() == entity.getId();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
     }
 }
