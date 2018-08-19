@@ -9,6 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 class ProjectDbRepositoryTest extends DbTestBase {
+
     @BeforeEach
     @Override
     void setUp() throws Exception {
