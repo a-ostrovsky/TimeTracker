@@ -23,6 +23,7 @@ dependencies {
     compile("com.h2database", "h2", "1.4.197")
     compile("org.springframework.data", "spring-data-jpa", "2.0.9.RELEASE")
     compile("org.slf4j", "slf4j-simple", "1.7.25")
+    compile("org.jetbrains", "annotations", "16.0.2")
 }
 
 configure<JavaPluginConvention> {

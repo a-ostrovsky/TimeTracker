@@ -2,8 +2,11 @@ package com.something.timetracker.repositories.impl;
 
 import com.something.timetracker.entities.Project;
 import com.something.timetracker.repositories.contracts.Page;
+import helpers.TimeMachine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.time.Duration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -37,5 +40,28 @@ class ProjectDbRepositoryTest extends DbTestBase {
         // Delete
         repository.delete(project);
         assertThat(repository.findOne(project.getId()), is(nullValue()));
+    }
+
+    @Test
+    void can_crud_working_times_of_projects() {
+        var repository = new ProjectDbRepository();
+        var project = new Project("test_project");
+
+        TimeMachine.use();
+        project.startIteration();
+        TimeMachine.addTime(Duration.ofHours(1));
+        project.stopIteration();
+
+        TimeMachine.addTime(Duration.ofHours(1));
+        project.startIteration();
+        TimeMachine.addTime(Duration.ofHours(1));
+        project.stopIteration();
+
+        // Create
+        var savedProject = repository.create(project);
+
+        // Read
+        var loadedProject = repository.findOne(project.getId());
+        assertThat(loadedProject.getWorkingTimes().size(), equalTo(2));
     }
 }
