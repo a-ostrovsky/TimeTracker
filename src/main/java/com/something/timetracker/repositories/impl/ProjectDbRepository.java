@@ -8,15 +8,14 @@ import com.something.timetracker.repositories.impl.mappers.ProjectMapper;
 import com.something.timetracker.repositories.impl.mappers.ProjectMappingConfiguration;
 import com.something.timetracker.repositories.impl.mappers.WorkingTimeMapper;
 import com.something.timetracker.repositories.impl.proxies.LoadOnFirstAccessProxySet;
+import com.something.timetracker.repositories.impl.proxies.ProxyCollection;
+import com.something.timetracker.repositories.impl.proxies.ProxyCollectionHelper;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class ProjectDbRepository implements ProjectRepository {
 
@@ -52,6 +51,7 @@ public class ProjectDbRepository implements ProjectRepository {
         ops.update("INSERT INTO Projects (name) VALUES (:name)", parameterSource, keyholder);
         entity.setId(Objects.requireNonNull(keyholder.getKey()).longValue());
         insertWorkingTimes(entity);
+        ensureWorkingTimeChangesAreTracked(entity);
         return entity;
     }
 
@@ -61,6 +61,8 @@ public class ProjectDbRepository implements ProjectRepository {
         var parameterSource = ProjectMapper.mapFromProject(entity,
                 ProjectMappingConfiguration.MAP_ALL);
         ops.update("UPDATE Projects SET name = :name WHERE id = :id", parameterSource);
+        insertWorkingTimes(entity);
+        ensureWorkingTimeChangesAreTracked(entity);
     }
 
     @Override
@@ -69,6 +71,15 @@ public class ProjectDbRepository implements ProjectRepository {
         var parameterSource = ProjectMapper.mapFromProject(entity,
                 ProjectMappingConfiguration.MAP_ALL);
         ops.update("DELETE FROM Projects WHERE id = :id", parameterSource);
+    }
+
+    private void ensureWorkingTimeChangesAreTracked(@NotNull Project entity) {
+        if (entity.getWorkingTimes() instanceof ProxyCollection) {
+            ((ProxyCollection) entity.getWorkingTimes()).resetTrackedChanges();
+        } else {
+            ProjectMapper.setWorkingTimes(entity,
+                    new LoadOnFirstAccessProxySet<>(entity.getWorkingTimes()));
+        }
     }
 
     @NotNull
@@ -89,9 +100,10 @@ public class ProjectDbRepository implements ProjectRepository {
         });
     }
 
-    private void insertWorkingTimes(Project project) {
-        Set<WorkingTime> workingTimes = project.getWorkingTimes();
-        for (WorkingTime workingTime : workingTimes) {
+    private void insertWorkingTimes(@NotNull Project project) {
+        Collection<WorkingTime> addedElements =
+                ProxyCollectionHelper.getAddedElements(project.getWorkingTimes());
+        for (WorkingTime workingTime : addedElements) {
             var ops = DbAccess.getDbOperations();
             var parameterSource = WorkingTimeMapper.mapFromWorkingTime(project, workingTime);
             ops.update("INSERT INTO WorkingTimes (project_id, start, end) " +

@@ -5,16 +5,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
 class DbTestBase {
-    private Migrator migrator;
+    private MigrationRunner migrationRunner;
 
-    Migrator getMigrator() {
-        return migrator;
+    MigrationRunner getMigrationRunner() {
+        return migrationRunner;
     }
 
     @BeforeEach
     void setUp() throws Exception {
         DbAccess.configure("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
-        migrator = new Migrator();
+        migrationRunner = new MigrationRunner();
     }
 
     @AfterEach

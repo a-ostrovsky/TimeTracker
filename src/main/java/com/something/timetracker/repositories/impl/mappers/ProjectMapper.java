@@ -26,11 +26,11 @@ public final class ProjectMapper {
         Project project = new Project();
         project.setId(rs.getLong("id"));
         project.setName(rs.getString("name"));
-        mapWorkingTimes(workingTimes, project);
+        setWorkingTimes(project, workingTimes);
         return project;
     }
 
-    private static void mapWorkingTimes(Set<WorkingTime> workingTimes, Project project) {
+    public static void setWorkingTimes(Project project, Set<WorkingTime> workingTimes) {
         try {
             Field workingTimesField = Project.class.getDeclaredField("workingTimes");
             workingTimesField.setAccessible(true);

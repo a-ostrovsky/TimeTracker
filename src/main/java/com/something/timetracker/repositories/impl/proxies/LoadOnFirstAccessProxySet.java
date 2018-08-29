@@ -1,7 +1,6 @@
 package com.something.timetracker.repositories.impl.proxies;
 
 import org.jetbrains.annotations.NotNull;
-import org.springframework.data.util.Lazy;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -9,16 +8,20 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Supplier;
 
-public class LoadOnFirstAccessProxySet<T> implements Set<T> {
+public class LoadOnFirstAccessProxySet<T> implements Set<T>, ProxyCollection<T> {
 
     private final Object syncRoot = new Object();
 
-    private final Lazy<Collection<T>> initializer;
-
+    private final Supplier<Collection<T>> initializer;
+    private final Set<T> addedElements = new HashSet<>();
     private Set<T> backingSet;
 
-    public LoadOnFirstAccessProxySet(Supplier<Collection<T>> selector) {
-        this.initializer = new Lazy<>(selector);
+    public LoadOnFirstAccessProxySet(Supplier<Collection<T>> initializer) {
+        this.initializer = initializer;
+    }
+
+    public LoadOnFirstAccessProxySet(Set<T> backingSet) {
+        this.initializer = () -> backingSet;
     }
 
     private void ensureInitialized() {
@@ -71,19 +74,25 @@ public class LoadOnFirstAccessProxySet<T> implements Set<T> {
     @Override
     public <T1> T1[] toArray(@NotNull T1[] a) {
         ensureInitialized();
-        return backingSet.toArray(a);
+        //return backingSet.toArray(a);
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean add(T t) {
         ensureInitialized();
-        return backingSet.add(t);
+        boolean added = backingSet.add(t);
+        if (added) {
+            addedElements.add(t);
+        }
+        return added;
     }
 
     @Override
     public boolean remove(Object o) {
         ensureInitialized();
-        return backingSet.remove(o);
+        //return backingSet.remove(o);
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -95,24 +104,44 @@ public class LoadOnFirstAccessProxySet<T> implements Set<T> {
     @Override
     public boolean addAll(@NotNull Collection<? extends T> c) {
         ensureInitialized();
-        return backingSet.addAll(c);
+        boolean added = false;
+        for (T elt : c) {
+            boolean elementAdded = add(elt);
+            added |= elementAdded;
+        }
+        return added;
     }
 
     @Override
     public boolean retainAll(@NotNull Collection<?> c) {
         ensureInitialized();
-        return backingSet.retainAll(c);
+        throw new UnsupportedOperationException();
+        // return backingSet.retainAll(c);
     }
 
     @Override
     public boolean removeAll(@NotNull Collection<?> c) {
         ensureInitialized();
-        return backingSet.removeAll(c);
+        // return backingSet.removeAll(c);
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void clear() {
         ensureInitialized();
-        backingSet.clear();
+        // backingSet.clear();
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Collection<T> getAddedElements() {
+        return addedElements;
+    }
+
+    @Override
+    public void resetTrackedChanges() {
+        synchronized (syncRoot) {
+            addedElements.clear();
+        }
     }
 }

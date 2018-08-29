@@ -8,10 +8,10 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-class MigratorTest extends DbTestBase {
+class MigrationRunnerTest extends DbTestBase {
     @Test
     void creates_initial_configuration_if_none_exists() throws Exception {
-        getMigrator().migrate();
+        getMigrationRunner().migrate();
         Integer version = DbAccess.getDbOperations().queryForObject(
                 "SELECT version FROM _DataModel", new MapSqlParameterSource(), Integer.class);
         assertThat(version, equalTo(1));
@@ -19,12 +19,12 @@ class MigratorTest extends DbTestBase {
 
     @Test
     void existing_data_is_not_lost() throws Exception {
-        getMigrator().migrate();
+        getMigrationRunner().migrate();
         var repository = new ProjectDbRepository();
         var project = new Project("test_project");
         project = repository.create(project);
 
-        getMigrator().migrate();
+        getMigrationRunner().migrate();
         assertThat(repository.findOne(project.getId()), notNullValue());
     }
 }

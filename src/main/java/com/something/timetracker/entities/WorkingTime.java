@@ -4,9 +4,9 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class WorkingTime {
-    private LocalDateTime start;
+    private final LocalDateTime start;
 
-    private LocalDateTime end;
+    private final LocalDateTime end;
 
     public WorkingTime(LocalDateTime start, LocalDateTime end) {
 

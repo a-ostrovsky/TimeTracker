@@ -17,7 +17,7 @@ class ProjectDbRepositoryTest extends DbTestBase {
     @Override
     void setUp() throws Exception {
         super.setUp();
-        getMigrator().migrate();
+        getMigrationRunner().migrate();
     }
 
     @Test
@@ -58,10 +58,23 @@ class ProjectDbRepositoryTest extends DbTestBase {
         project.stopIteration();
 
         // Create
-        var savedProject = repository.create(project);
+        repository.create(project);
 
         // Read
-        var loadedProject = repository.findOne(project.getId());
-        assertThat(loadedProject.getWorkingTimes().size(), equalTo(2));
+        var createdProject = repository.findOne(project.getId());
+        assertThat(createdProject.getWorkingTimes().size(), equalTo(2));
+
+        // Work again
+        TimeMachine.addTime(Duration.ofHours(1));
+        createdProject.startIteration();
+        TimeMachine.addTime(Duration.ofHours(1));
+        createdProject.stopIteration();
+
+        // Update
+        repository.update(createdProject);
+
+        // Read again
+        var updatedProject = repository.findOne(project.getId());
+        assertThat(updatedProject.getWorkingTimes().size(), equalTo(3));
     }
 }

@@ -14,7 +14,7 @@ public class Project extends Entity {
     private LocalDateTime startTime;
 
     // Used via reflection in ProjectMapper
-    private Set<WorkingTime> workingTimes = new HashSet<>();
+    private final Set<WorkingTime> workingTimes = new HashSet<>();
 
     public Project() {
     }

@@ -1,8 +1,8 @@
 package com.something.timetracker.repositories.contracts;
 
 public class Page {
-    private int inclusiveStart;
-    private int maxResults;
+    private final int inclusiveStart;
+    private final int maxResults;
 
     public Page(int inclusiveStart, int maxResults) {
         this.inclusiveStart = inclusiveStart;
