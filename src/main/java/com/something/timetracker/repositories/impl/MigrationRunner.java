@@ -11,8 +11,8 @@ import java.util.Collection;
 
 import static java.util.stream.Collectors.toList;
 
-final class MigrationRunner {
-    void migrate() throws SQLException {
+public final class MigrationRunner {
+    public void migrate() throws SQLException {
         try (var connection = DbAccess.getConnection()) {
             ensureDataModelTableExists();
             Collection<String> requiredMigrationFiles = calculateMigrations();

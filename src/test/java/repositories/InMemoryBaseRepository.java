@@ -8,12 +8,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
+
+import static java.util.stream.Collectors.toList;
 
 public class InMemoryBaseRepository<T extends Entity> implements GenericRepository<T> {
 
+    private final Map<Long, T> database = new HashMap<>();
     private int currentId = 0;
 
-    private final Map<Long, T> database = new HashMap<>();
+    protected List<T> findBy(Predicate<T> predicate) {
+        return database.values().stream().filter(predicate).collect(toList());
+    }
 
     @Override
     public T findOne(long id) {

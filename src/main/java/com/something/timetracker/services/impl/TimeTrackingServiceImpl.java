@@ -10,10 +10,20 @@ import java.util.Collection;
 public class TimeTrackingServiceImpl implements TimeTrackingService {
     private final ProjectRepository projectRepository;
 
+    public TimeTrackingServiceImpl(ProjectRepository projectRepository) {
+        this.projectRepository = projectRepository;
+    }
+
     @Override
     public void createProject(String projectName) {
-        Project project = new Project(projectName);
-        projectRepository.create(project);
+        createProjectAndReturn(projectName);
+    }
+
+    @Override
+    public void startIteration(String projectName) {
+        var optionalProject = projectRepository.findByName(projectName);
+        Project project = optionalProject.orElseGet(() -> createProjectAndReturn(projectName));
+        project.startIteration();
     }
 
     @Override
@@ -21,8 +31,9 @@ public class TimeTrackingServiceImpl implements TimeTrackingService {
         return projectRepository.findAll(new Page(0, Integer.MAX_VALUE));
     }
 
-    public TimeTrackingServiceImpl(ProjectRepository projectRepository){
-
-        this.projectRepository = projectRepository;
+    private Project createProjectAndReturn(String projectName) {
+        Project project = new Project(projectName);
+        projectRepository.create(project);
+        return project;
     }
 }

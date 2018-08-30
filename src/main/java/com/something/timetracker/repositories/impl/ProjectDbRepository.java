@@ -110,4 +110,17 @@ public class ProjectDbRepository implements ProjectRepository {
                     "VALUES (:project_id, :start, :end)", parameterSource);
         }
     }
+
+    @Override
+    public Optional<Project> findByName(String projectName) {
+        var ops = DbAccess.getDbOperations();
+        var parameterSource = new MapSqlParameterSource();
+        parameterSource.addValue("name", projectName);
+        var results = ops.query("SELECT * FROM Projects WHERE name = :name", parameterSource,
+                (rs, rowNumber) -> {
+                    long id = rs.getLong("id");
+                    return ProjectMapper.mapToProject(rs, findWorkingTimes(id));
+                });
+        return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
+    }
 }
