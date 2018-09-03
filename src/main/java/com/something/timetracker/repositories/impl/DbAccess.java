@@ -1,6 +1,7 @@
 package com.something.timetracker.repositories.impl;
 
 import org.h2.jdbcx.JdbcDataSource;
+import org.jetbrains.annotations.Contract;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -24,7 +25,8 @@ public final class DbAccess {
         operations = new NamedParameterJdbcTemplate(dataSource);
     }
 
-    static NamedParameterJdbcOperations getDbOperations() {
+    @Contract(pure = true)
+    public static NamedParameterJdbcOperations getDbOperations() {
         return operations;
     }
 

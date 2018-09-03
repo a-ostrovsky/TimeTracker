@@ -9,7 +9,8 @@ public class WorkingTime {
     private final LocalDateTime end;
 
     public WorkingTime(LocalDateTime start, LocalDateTime end) {
-
+        Objects.requireNonNull(start);
+        Objects.requireNonNull(end);
         this.start = start;
         this.end = end;
     }

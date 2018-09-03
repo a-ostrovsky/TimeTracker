@@ -1,13 +1,11 @@
 package com.something.timetracker.gui.terminal;
 
-import com.google.common.base.Joiner;
 import com.something.timetracker.entities.Project;
+import com.something.timetracker.entities.WorkingTime;
 import com.something.timetracker.services.contracts.TimeTrackingService;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
-import java.util.List;
-
-import static java.util.stream.Collectors.toList;
 
 class MainViewPresenter {
     private final MainView ui;
@@ -18,11 +16,43 @@ class MainViewPresenter {
         this.timeTrackingService = timeTrackingService;
     }
 
+    @NotNull
+    private static String projectsToString(@NotNull Collection<Project> projects) {
+        StringBuilder builder = new StringBuilder();
+        for (Project project : projects) {
+            builder.append(projectToString(project));
+            builder.append(System.lineSeparator());
+        }
+        return builder.toString();
+    }
+
+    @NotNull
+    private static String projectToString(@NotNull Project project) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(project.getName()).append(System.lineSeparator());
+        for (WorkingTime workingTime : project.getWorkingTimes()) {
+            builder.append(" ")
+                    .append(workingTime.getStart())
+                    .append(" - ")
+                    .append(workingTime.getEnd())
+                    .append(System.lineSeparator());
+        }
+        return builder.toString();
+    }
+
     void showCurrentProjects() {
         Collection<Project> projects = timeTrackingService.getAllProjects();
-        final List<String> projectNames =
-                projects.stream().map(Project::getName).collect(toList());
-        final String projectNamesString = Joiner.on(System.lineSeparator()).join(projectNames);
-        ui.setText(projectNamesString);
+        String projectsAsString = projectsToString(projects);
+        ui.setText(projectsAsString);
+    }
+
+    void startIteration(String projectName) {
+        timeTrackingService.startIteration(projectName);
+        showCurrentProjects();
+    }
+
+    void endIteration() {
+        timeTrackingService.stopCurrentIteration();
+        showCurrentProjects();
     }
 }

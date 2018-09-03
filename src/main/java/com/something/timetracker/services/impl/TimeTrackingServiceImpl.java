@@ -21,9 +21,22 @@ public class TimeTrackingServiceImpl implements TimeTrackingService {
 
     @Override
     public void startIteration(String projectName) {
+        stopCurrentIteration();
         var optionalProject = projectRepository.findByName(projectName);
         Project project = optionalProject.orElseGet(() -> createProjectAndReturn(projectName));
         project.startIteration();
+        projectRepository.setActiveProject(project);
+    }
+
+    @Override
+    public void stopCurrentIteration() {
+        var optionalActiveProject = projectRepository.findActiveProject();
+        if (!optionalActiveProject.isPresent()) {
+            return;
+        }
+        Project activeProject = optionalActiveProject.get();
+        activeProject.stopIteration();
+        projectRepository.update(activeProject);
     }
 
     @Override

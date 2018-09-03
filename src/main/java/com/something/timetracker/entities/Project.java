@@ -11,6 +11,7 @@ public class Project extends Entity {
 
     private String name;
 
+    // Used via reflection in ProjectMapper
     private LocalDateTime startTime;
 
     // Used via reflection in ProjectMapper

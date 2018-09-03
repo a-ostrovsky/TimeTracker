@@ -4,6 +4,7 @@ import com.something.timetracker.entities.Project;
 import com.something.timetracker.entities.WorkingTime;
 import com.something.timetracker.repositories.contracts.Page;
 import com.something.timetracker.repositories.contracts.ProjectRepository;
+import com.something.timetracker.repositories.impl.mappers.CurrentStartOfIteration;
 import com.something.timetracker.repositories.impl.mappers.ProjectMapper;
 import com.something.timetracker.repositories.impl.mappers.ProjectMappingConfiguration;
 import com.something.timetracker.repositories.impl.mappers.WorkingTimeMapper;
@@ -15,17 +16,21 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
-public class ProjectDbRepository implements ProjectRepository {
+//TODO: Transactions
+public class ProjectDbRepository extends DbRepository<Project> implements ProjectRepository {
 
     @Override
     public Project findOne(long id) {
         var ops = DbAccess.getDbOperations();
         var parameterSource = new MapSqlParameterSource();
         parameterSource.addValue("id", id);
+        var iterationStart = new CurrentStartOfIteration();
         var results = ops.query("SELECT * FROM Projects WHERE id = :id", parameterSource,
-                (rs, rowNumber) -> ProjectMapper.mapToProject(rs, findWorkingTimes(id)));
+                (rs, rowNumber) -> ProjectMapper.mapToProject(rs, findWorkingTimes(id),
+                        iterationStart.getStartOfCurrentIteration(id)));
         return results.isEmpty() ? null : results.get(0);
     }
 
@@ -35,10 +40,13 @@ public class ProjectDbRepository implements ProjectRepository {
         var parameterSource = new MapSqlParameterSource();
         parameterSource.addValue("offset", page.getInclusiveStart());
         parameterSource.addValue("limit", page.getMaxResults());
+        var iterationStart = new CurrentStartOfIteration();
         return ops.query("SELECT * FROM Projects LIMIT :limit OFFSET :offset",
                 parameterSource, (rs, rowNum) -> {
-                    Set<WorkingTime> workingTimes = findWorkingTimes(rs.getLong("id"));
-                    return ProjectMapper.mapToProject(rs, workingTimes);
+                    long id = rs.getLong("id");
+                    Set<WorkingTime> workingTimes = findWorkingTimes(id);
+                    var startTimeOfIteration = iterationStart.getStartOfCurrentIteration(id);
+                    return ProjectMapper.mapToProject(rs, workingTimes, startTimeOfIteration);
                 });
     }
 
@@ -63,6 +71,9 @@ public class ProjectDbRepository implements ProjectRepository {
         ops.update("UPDATE Projects SET name = :name WHERE id = :id", parameterSource);
         insertWorkingTimes(entity);
         ensureWorkingTimeChangesAreTracked(entity);
+        if (!entity.getStartOfCurrentIteration().isPresent()) {
+            ops.update("DELETE FROM CurrentIteration WHERE project_id = :id", parameterSource);
+        }
     }
 
     @Override
@@ -116,11 +127,44 @@ public class ProjectDbRepository implements ProjectRepository {
         var ops = DbAccess.getDbOperations();
         var parameterSource = new MapSqlParameterSource();
         parameterSource.addValue("name", projectName);
+        var startTime = new CurrentStartOfIteration();
         var results = ops.query("SELECT * FROM Projects WHERE name = :name", parameterSource,
                 (rs, rowNumber) -> {
                     long id = rs.getLong("id");
-                    return ProjectMapper.mapToProject(rs, findWorkingTimes(id));
+                    var startTimeOfIteration = startTime.getStartOfCurrentIteration(id);
+                    return ProjectMapper.mapToProject(rs, findWorkingTimes(id),
+                            startTimeOfIteration);
                 });
         return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
     }
+
+    @Override
+    public void setActiveProject(Project project) {
+        project = createIfNotExists(project);
+        var ops = DbAccess.getDbOperations();
+        var parameterSource = new MapSqlParameterSource();
+        Optional<LocalDateTime> startTime = project.getStartOfCurrentIteration();
+        if (!startTime.isPresent()) {
+            throw new NoActiveIterationException(project);
+        }
+        parameterSource.addValue("project_id", project.getId());
+        parameterSource.addValue("start", startTime.get());
+        ops.update("INSERT INTO CurrentIteration (project_id, start) " +
+                "VALUES (:project_id, :start)", parameterSource);
+
+    }
+
+    @Override
+    public Optional<Project> findActiveProject() {
+        var iterationStart = new CurrentStartOfIteration();
+        Optional<Long> projectId = iterationStart.findActiveProjectId();
+        return projectId.map(this::findOne);
+    }
+
+    private class NoActiveIterationException extends RuntimeException {
+        NoActiveIterationException(@NotNull Project project) {
+            super("Project " + project.getName() + " has no active iteration");
+        }
+    }
+
 }
