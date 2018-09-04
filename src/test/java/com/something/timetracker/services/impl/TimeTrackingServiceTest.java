@@ -30,6 +30,13 @@ class TimeTrackingServiceTest {
     }
 
     @Test
+    void deleted_projects_are_no_more_there() {
+        service.createProject("project");
+        service.deleteProject("project");
+        assertThat(service.getAllProjects().size(), is(equalTo(0)));
+    }
+
+    @Test
     void starting_iteration_for_new_project_creates_that_project() {
         service.startIteration("project");
         Optional<Project> createdProject = projectRepository.findByName("project");

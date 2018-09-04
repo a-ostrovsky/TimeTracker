@@ -29,6 +29,12 @@ public class TimeTrackingServiceImpl implements TimeTrackingService {
     }
 
     @Override
+    public void deleteProject(String projectName) {
+        var optionalProject = projectRepository.findByName(projectName);
+        optionalProject.ifPresent(projectRepository::delete);
+    }
+
+    @Override
     public void stopCurrentIteration() {
         var optionalActiveProject = projectRepository.findActiveProject();
         if (!optionalActiveProject.isPresent()) {

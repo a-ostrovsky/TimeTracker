@@ -55,4 +55,9 @@ class MainViewPresenter {
         timeTrackingService.stopCurrentIteration();
         showCurrentProjects();
     }
+
+    void deleteProject(String projectName) {
+        timeTrackingService.deleteProject(projectName);
+        showCurrentProjects();
+    }
 }

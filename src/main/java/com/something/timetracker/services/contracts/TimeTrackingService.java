@@ -7,6 +7,7 @@ import java.util.Collection;
 public interface TimeTrackingService {
     void createProject(String projectName);
     void startIteration(String projectName);
+    void deleteProject(String projectName);
     void stopCurrentIteration();
     Collection<Project> getAllProjects();
 }

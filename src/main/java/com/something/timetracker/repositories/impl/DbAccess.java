@@ -9,7 +9,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public final class DbAccess {
-    private static final String DEFAULT_URL = "jdbc:h2:~/.timetracker/db";
+    private static final String DEFAULT_URL = "jdbc:h2:~/.timetracker/db/timetracker";
     private static NamedParameterJdbcOperations operations;
     private static JdbcDataSource dataSource;
 

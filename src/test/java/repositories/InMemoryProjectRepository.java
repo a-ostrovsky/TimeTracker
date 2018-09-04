@@ -26,4 +26,12 @@ public class InMemoryProjectRepository
     public Optional<Project> findActiveProject() {
         return activeProject == null ? Optional.empty() : Optional.of(activeProject);
     }
+
+    @Override
+    public void delete(Project entity) {
+        super.delete(entity);
+        if (activeProject != null && activeProject.getId() == entity.getId()) {
+            activeProject = null;
+        }
+    }
 }
